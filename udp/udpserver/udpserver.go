@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"log"
 	"net"
 )
@@ -21,9 +23,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		s := string(buf[0:n-1]) + " from " + cliAddr.String() + "\n"
-		if _, err := conn.WriteTo([]byte(s), cliAddr); err != nil {
-			log.Fatal(err)
+		s := bufio.NewScanner(bytes.NewReader(buf[0:n]))
+		for s.Scan() {
+			s := s.Text() + " from " + cliAddr.String() + "\n"
+			if _, err := conn.WriteTo([]byte(s), cliAddr); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }

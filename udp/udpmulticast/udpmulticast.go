@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -44,7 +46,10 @@ func clientReader(addr *net.UDPAddr) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("%s from %v\n", string(buf[0:n-1]), addr)
+		s := bufio.NewScanner(bytes.NewReader(buf[0:n]))
+		for s.Scan() {
+			fmt.Printf("%s from %v\n", s.Text(), addr)
+		}
 	}
 }
 
