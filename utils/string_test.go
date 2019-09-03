@@ -1,4 +1,4 @@
-package prr-utils
+package utils
 
 import "testing"
 
