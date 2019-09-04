@@ -1,7 +1,7 @@
 // Package utils define various functions for prr
 package utils
 
-// Reverse string
+// Reverse string rune by rune
 func Reverse(s string) string {
 
 	b := []rune(s)
