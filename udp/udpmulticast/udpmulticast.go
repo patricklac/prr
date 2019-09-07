@@ -1,8 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -13,15 +11,11 @@ import (
 )
 
 // debut, OMIT
-const multicastAddr = "224.0.0.1:6000"
+const multicastAddr = "224.0.0.1:6666"
 
 func main() {
-	addr, err := net.ResolveUDPAddr("udp", multicastAddr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	go clientReader(addr)
-	conn, err := net.DialUDP("udp", nil, addr)
+	go clientReader()
+	conn, err := net.Dial("udp", multicastAddr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,27 +24,30 @@ func main() {
 }
 
 // milieu, OMIT
-func clientReader(addr *net.UDPAddr) {
-	conn, err := net.ListenUDP("udp", addr)
+func clientReader() {
+	conn, err := net.ListenPacket("udp", multicastAddr) // listen on port
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
-	packetConnV4 := ipv4.NewPacketConn(conn)
-	if err = packetConnV4.JoinGroup(nil, addr); err != nil {
+	p := ipv4.NewPacketConn(conn) // convert to ipv4 packetConn
+	addr, err := net.ResolveUDPAddr("udp", multicastAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = p.JoinGroup(nil, addr); err != nil { // listen on ip multicast
 		log.Fatal(err)
 	}
 	buf := make([]byte, 1024)
 	for {
-		n, addr, err := conn.ReadFrom(buf)
-		// n, _, addr, err := packetConnV4.ReadFrom(buf)
+		n, addr, err := conn.ReadFrom(buf) // n, _, addr, err := p.ReadFrom(buf)
 		if err != nil {
 			log.Fatal(err)
 		}
-		s := bufio.NewScanner(bytes.NewReader(buf[0:n]))
-		for s.Scan() {
-			fmt.Printf("%s from %v\n", s.Text(), addr)
-		}
+		// extract text without CR/LF
+		var text string
+		fmt.Sscanf(string(buf[0:n]), "%s", &text)
+		fmt.Printf("%s from %v\n", text, addr)
 	}
 }
 
