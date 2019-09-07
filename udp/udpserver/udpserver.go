@@ -19,7 +19,7 @@ func main() {
 	defer conn.Close()
 	buf := make([]byte, 1024)
 	for {
-		n, cliAddr, err := conn.ReadFromUDP(buf)
+		n, cliAddr, err := conn.ReadFrom(buf)
 		if err != nil {
 			log.Fatal(err)
 		}

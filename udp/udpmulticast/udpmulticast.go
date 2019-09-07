@@ -31,18 +31,19 @@ func main() {
 
 // milieu, OMIT
 func clientReader(addr *net.UDPAddr) {
-	conn, err := net.ListenUDP("udp4", addr)
+	conn, err := net.ListenUDP("udp", addr)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer conn.Close()
-	p := ipv4.NewPacketConn(conn)
-	if err = p.JoinGroup(nil, addr); err != nil {
+	packetConnV4 := ipv4.NewPacketConn(conn)
+	if err = packetConnV4.JoinGroup(nil, addr); err != nil {
 		log.Fatal(err)
 	}
 	buf := make([]byte, 1024)
 	for {
-		n, addr, err := conn.ReadFromUDP(buf)
+		n, addr, err := conn.ReadFrom(buf)
+		// n, _, addr, err := packetConnV4.ReadFrom(buf)
 		if err != nil {
 			log.Fatal(err)
 		}
