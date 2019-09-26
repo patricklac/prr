@@ -1,11 +1,14 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"os"
+	"runtime"
 
 	"golang.org/x/net/ipv4"
 )
@@ -35,7 +38,12 @@ func clientReader() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = p.JoinGroup(nil, addr); err != nil { // listen on ip multicast
+	var interf *net.Interface
+	if runtime.GOOS == "darwin" {
+		interf, _ = net.InterfaceByName("en0")
+	}
+
+	if err = p.JoinGroup(interf, addr); err != nil { // listen on ip multicast
 		log.Fatal(err)
 	}
 	buf := make([]byte, 1024)
@@ -44,10 +52,10 @@ func clientReader() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		// extract text without CR/LF
-		var text string
-		fmt.Sscanf(string(buf[0:n]), "%s", &text)
-		fmt.Printf("%s from %v\n", text, addr)
+		s := bufio.NewScanner(bytes.NewReader(buf[0:n]))
+		for s.Scan() {
+			fmt.Printf("%s from %v\n", s.Text(), addr)
+		}
 	}
 }
 
