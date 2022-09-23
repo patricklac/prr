@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/patricklac/prr/utils"
+	"prr/utils"
 )
 
 func main() {
